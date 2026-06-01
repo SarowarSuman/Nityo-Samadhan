@@ -147,7 +147,7 @@ nityo-samadhan/
 ├── index.html        # Entire application — frontend + Firebase logic
 ├── sitemap.xml       # For Google Search Console indexing
 ├── SECURITY.md       # Security policy, layers & vulnerability reporting
-└── README.md         # You are here
+└── README.md         # I am here
 ```
 
 **Single file architecture** — intentional. No build process, no node_modules, no CI/CD pipeline needed. Anyone can open it, read it, and understand the entire codebase in one sitting.
@@ -192,7 +192,5 @@ MIT License — use it, fork it, build on it. Just don't forget where it came fr
 **Built with care for the people of Taherpur. 🏘️**
 
 *"প্রতিবেশীর সাহায্যে প্রতিবেশী" — Neighbor helping neighbor.*
-
-⭐ Star this repo if you think more localities deserve this tool!
 
 </div>

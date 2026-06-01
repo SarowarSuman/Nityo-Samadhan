@@ -12,7 +12,7 @@
 
 **"One person's experience becomes everyone's solution."**
 
-       [🌐 Live Demo](https://nityo-samadhan.netlify.app/)
+[🌐 Live Demo](https://nityo-samadhan.netlify.app/)
 </div>
 
 ---

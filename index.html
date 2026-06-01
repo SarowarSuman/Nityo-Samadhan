@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>নিত্য সমাধান</title>
+<meta name="description" content="নিত্য সমাধান - আপনার এলাকার সেবার ডিরেক্টরি। মিস্ত্রী, মেডিকেল, পুলিশ, ফায়ার সার্ভিস সহ সব সেবার নাম ও ফোন নম্বর।" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Segoe UI', 'Hind Siliguri', sans-serif;
+    background: #0d1b2a;
+    color: #f0f4f8;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+  :root {
+    --bg: #0d1b2a; --surface: #152338; --card: #1a2d42;
+    --accent: #f5a623; --accent2: #e8631a;
+    --text: #f0f4f8; --muted: #8baabb;
+    --border: rgba(255,255,255,0.08);
+    --green: #27ae60; --red: #e74c3c;
+  }
+  #app { min-height: 100vh; }
+
+  /* LOADING */
+  #loadingScreen {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; gap: 16px;
+  }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { color: var(--muted); font-size: 13px; }
+
+  /* LANDING */
+  #landing {
+    display: none; flex-direction: column; align-items: center;
+    justify-content: center; min-height: 100vh;
+    padding: 2rem 1rem 3rem; text-align: center; position: relative; overflow: hidden;
+  }
+  #landing::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 25%, rgba(245,166,35,0.13) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .logo-icon {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 22px; display: flex; align-items: center; justify-content: center;
+    font-size: 36px; margin: 0 auto 1.2rem;
+    box-shadow: 0 8px 36px rgba(245,166,35,0.3);
+  }
+  .site-title {
+    font-size: 2.4rem; font-weight: 700; color: var(--accent);
+    letter-spacing: -0.5px; margin-bottom: 1.8rem;
+  }
+  .service-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; width: 100%; max-width: 480px; margin: 0 auto 2rem;
+  }
+  .service-btn {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 8px; cursor: pointer;
+    transition: all 0.18s ease; text-align: center; color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .service-btn:hover, .service-btn:active {
+    border-color: var(--accent); background: rgba(245,166,35,0.1); transform: translateY(-2px);
+  }
+  .service-btn .s-icon { font-size: 24px; margin-bottom: 6px; }
+  .service-btn .s-name { font-size: 11px; font-weight: 600; line-height: 1.3; }
+  .service-btn .s-count { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .social-row { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 0.5rem; }
+  .fb-btn {
+    background: #1877f2; color: #fff; border: none; border-radius: 50%;
+    width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; box-shadow: 0 4px 16px rgba(24,119,242,0.4);
+    transition: opacity 0.15s, transform 0.15s; -webkit-tap-highlight-color: transparent;
+  }
+  .fb-btn:hover { opacity: 0.88; transform: scale(1.08); }
+  .creator { font-size: 12px; color: var(--muted); margin-top: 1.2rem; }
+
+  /* SERVICE PAGE */
+  #service-page { display: none; padding: 1rem; max-width: 600px; margin: 0 auto; }
+  .back-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    border-radius: 8px; padding: 9px 16px; cursor: pointer; font-size: 13px;
+    margin-bottom: 1rem; display: inline-flex; align-items: center; gap: 6px;
+    -webkit-tap-highlight-color: transparent; font-family: inherit;
+  }
+  .back-btn:hover { color: var(--text); border-color: var(--accent); }
+  .page-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);
+  }
+  .page-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .page-title { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+  .page-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* FORM */
+  .add-form {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.2rem; margin-bottom: 1.2rem;
+  }
+  .form-title { font-size: 14px; font-weight: 600; color: var(--accent); margin-bottom: 1rem; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .field label { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .field input {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 13px; color: var(--text);
+    font-size: 14px; outline: none; transition: border-color 0.15s; font-family: inherit;
+  }
+  .field input:focus { border-color: var(--accent); }
+  .field input::placeholder { color: var(--muted); opacity: 0.55; }
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; border-radius: 11px; padding: 12px;
+    font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 10px;
+    transition: opacity 0.15s; font-family: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ENTRIES */
+  .entries-label { font-size: 13px; color: var(--muted); font-weight: 600; margin-bottom: 10px; }
+  .entry-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  }
+  .entry-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+  .entry-name { font-size: 15px; font-weight: 700; color: var(--text); }
+  .entry-phone { font-size: 14px; color: var(--accent); margin-top: 3px; }
+  .entry-address { font-size: 12px; color: #7ecba1; margin-top: 2px; }
+  .entry-note { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .entry-date-lbl { font-size: 11px; color: rgba(139,170,187,0.5); margin-top: 3px; }
+  .delete-btn {
+    background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3);
+    color: var(--red); border-radius: 7px; padding: 5px 11px;
+    cursor: pointer; font-size: 11px; font-weight: 600; flex-shrink: 0;
+    font-family: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .delete-btn:hover { background: rgba(231,76,60,0.22); }
+  .action-row {
+    display: flex; gap: 8px; margin-top: 12px;
+    border-top: 1px solid var(--border); padding-top: 12px;
+  }
+  .call-btn {
+    flex: 1; background: rgba(39,174,96,0.14); border: 1px solid rgba(39,174,96,0.4);
+    color: var(--green); border-radius: 9px; padding: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 700; text-align: center; text-decoration: none;
+    display: block; font-family: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .call-btn:hover { background: rgba(39,174,96,0.26); }
+  .copy-btn {
+    flex: 1; background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.35);
+    color: var(--accent); border-radius: 9px; padding: 10px; cursor: pointer;
+    font-size: 13px; font-weight: 700; text-align: center;
+    font-family: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .copy-btn:hover { background: rgba(245,166,35,0.2); }
+  .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--muted); font-size: 13px; }
+  .empty-icon { font-size: 42px; margin-bottom: 10px; }
+  .loading-entries { text-align: center; padding: 2rem; color: var(--muted); font-size: 13px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+    color: #fff; padding: 11px 24px; border-radius: 12px; font-size: 13px;
+    font-weight: 600; z-index: 9999; display: none; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  /* ADMIN */
+  .admin-bar {
+    position: fixed; top: 0; right: 0;
+    z-index: 100; padding: 8px 12px;
+  }
+  .admin-toggle {
+    background: rgba(245,166,35,0.15);
+    border: 1px solid rgba(245,166,35,0.3);
+    color: var(--accent); border-radius: 8px;
+    padding: 6px 12px; cursor: pointer; font-size: 11px;
+    font-family: inherit; -webkit-tap-highlight-color: transparent;
+  }
+  .admin-toggle.active { background: rgba(245,166,35,0.3); }
+
+  /* REPORT BTN */
+  .report-btn {
+    background: none; border: none; color: rgba(139,170,187,0.4);
+    font-size: 11px; cursor: pointer; padding: 4px 0;
+    font-family: inherit; display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 6px; transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .report-btn:hover { color: #e74c3c; }
+  .report-btn.reported { color: #e74c3c; cursor: default; }
+  .hidden-entry { display: none; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9998; padding: 1rem;
+  }
+  .modal-box {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 320px;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--accent); margin-bottom: 1rem; }
+  .modal-input {
+    width: 100%; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 9px; padding: 10px 13px; color: var(--text);
+    font-size: 14px; outline: none; font-family: inherit; margin-bottom: 10px;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-row { display: flex; gap: 8px; }
+  .modal-btn {
+    flex: 1; padding: 10px; border-radius: 9px; cursor: pointer;
+    font-size: 13px; font-weight: 700; font-family: inherit; border: none;
+  }
+  .modal-btn.confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; }
+  .modal-btn.cancel { background: var(--surface); color: var(--muted); }
+
+  @media (max-width: 400px) {
+    .site-title { font-size: 1.9rem; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+
+  /* ── WELCOME POPUP ── */
+  .popup-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 99999; padding: 1rem;
+    animation: fadeIn 0.4s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .popup-box {
+    background: linear-gradient(160deg, #1a2d42 0%, #0d1b2a 100%);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 24px;
+    width: 100%; max-width: 380px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    animation: slideUp 0.4s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  .popup-banner {
+    background: linear-gradient(135deg, #1a3a5c, #0d2438);
+    padding: 2rem 1.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid rgba(245,166,35,0.2);
+  }
+  .popup-banner::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.15) 0%, transparent 70%);
+  }
+  .popup-logo {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #f5a623, #e8631a);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; margin: 0 auto 1rem;
+    box-shadow: 0 8px 24px rgba(245,166,35,0.4);
+    position: relative; z-index: 1;
+  }
+  .popup-site-name {
+    font-size: 1.6rem; font-weight: 800;
+    color: #f5a623; position: relative; z-index: 1;
+    letter-spacing: -0.3px;
+  }
+  .popup-site-sub {
+    font-size: 12px; color: #8baabb;
+    margin-top: 4px; position: relative; z-index: 1;
+  }
+
+  /* Decorative dots */
+  .popup-banner::after {
+    content: '●  ●  ●';
+    position: absolute; bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 6px; color: rgba(245,166,35,0.3);
+    letter-spacing: 6px; z-index: 1;
+  }
+
+  .popup-body {
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .popup-area-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(245,166,35,0.1);
+    border: 1px solid rgba(245,166,35,0.3);
+    border-radius: 20px; padding: 6px 14px;
+    font-size: 12px; color: #f5a623; font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  .popup-message {
+    font-size: 13.5px; line-height: 1.8;
+    color: #c8d8e4;
+    background: rgba(255,255,255,0.04);
+    border-left: 3px solid #f5a623;
+    border-radius: 0 10px 10px 0;
+    padding: 1rem;
+    text-align: left;
+    margin-bottom: 1.2rem;
+  }
+  .popup-message strong { color: #f5a623; }
+  .popup-enter-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #f5a623, #e8631a);
+    color: #fff; border: none; border-radius: 12px;
+    padding: 13px; font-size: 15px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 4px 20px rgba(245,166,35,0.35);
+    transition: opacity 0.15s, transform 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .popup-enter-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .popup-enter-btn:active { transform: translateY(0); }
+  .popup-footer {
+    font-size: 11px; color: rgba(139,170,187,0.5);
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- WELCOME POPUP -->
+  <div class="popup-overlay" id="welcomePopup">
+    <div class="popup-box">
+      <div class="popup-banner">
+        <div class="popup-logo">🏘️</div>
+        <div class="popup-site-name">নিত্য সমাধান</div>
+        <div class="popup-site-sub">Sarowar Suman</div>
+      </div>
+      <div class="popup-body">
+        <div class="popup-area-badge">
+          📍 সেবা এলাকা
+        </div>
+        <div class="popup-message">
+          এটি শুধুমাত্র <strong>রাজশাহী জেলার বাগমারা উপজেলার তাহেরপুর পৌরসভার</strong> জন্যই প্রযোজ্য।<br><br>
+          তাই অনুগ্রহপূর্বক উল্লেখিত এলাকার বাইরের সকলকে তথ্য ইনপুট না দেওয়ার জন্য অনুরোধ করা হলো।
+        </div>
+        <button class="popup-enter-btn" onclick="closePopup()">✓ বুঝেছি, প্রবেশ করুন</button>
+        <div class="popup-footer">তাহেরপুর পৌরসভা, বাগমারা, রাজশাহী</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN BAR -->
+  <div class="admin-bar">
+    <button class="admin-toggle" id="adminToggle" onclick="toggleAdmin()">🔒 Admin</button>
+  </div>
+
+  <!-- ADMIN LOGIN MODAL -->
+  <div class="modal-overlay" id="adminModal" style="display:none;">
+    <div class="modal-box">
+      <div class="modal-title">🔐 Admin Login</div>
+      <input class="modal-input" type="password" id="adminPassInput" placeholder="পাসওয়ার্ড দিন..." onkeydown="if(event.key==='Enter')checkAdminPass()" />
+      <div class="modal-row">
+        <button class="modal-btn confirm" onclick="checkAdminPass()">✓ Login</button>
+        <button class="modal-btn cancel" onclick="closeAdminModal()">বাতিল</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loadingScreen">
+    <div class="spinner"></div>
+    <div class="loading-text">লোড হচ্ছে...</div>
+  </div>
+
+  <!-- LANDING PAGE -->
+  <div id="landing">
+    <div class="logo-icon">🏘️</div>
+    <div class="site-title">নিত্য সমাধান</div>
+    <div class="service-grid" id="serviceGrid"></div>
+    <div class="social-row">
+      <a class="fb-btn" href="https://www.facebook.com/share/1REsHMSrZo/" target="_blank" rel="noopener" title="ফেসবুকে দেখুন">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+      </a>
+    </div>
+    <div class="creator">Sarowar Suman | নিত্য সমাধান</div>
+  </div>
+
+  <!-- SERVICE PAGE -->
+  <div id="service-page">
+    <button class="back-btn" onclick="showLanding()">← পেছনে যান</button>
+    <div class="page-header">
+      <div class="page-icon" id="pageIcon"></div>
+      <div>
+        <div class="page-title" id="pageTitle"></div>
+        <div class="page-sub">নাম, ফোন ও ঠিকানা যোগ করুন</div>
+      </div>
+    </div>
+    <div class="add-form">
+      <div class="form-title">+ নতুন তথ্য যোগ করুন</div>
+      <div class="form-row">
+        <div class="field">
+          <label>নাম *</label>
+          <input type="text" id="inputName" placeholder="রেজেন আলাউদ্দিন সাহেব" />
+        </div>
+        <div class="field">
+          <label>ফোন নম্বর *</label>
+          <input type="tel" id="inputPhone" placeholder="017XXXXXXXX" />
+        </div>
+      </div>
+      <div class="field">
+        <label>ঠিকানা</label>
+        <input type="text" id="inputAddress" placeholder="যেমন: পুঠিয়া বাজার, রাজশাহী..." />
+      </div>
+      <div class="field">
+        <label>অতিরিক্ত তথ্য (ঐচ্ছিক)</label>
+        <input type="text" id="inputNote" placeholder="যেমন: ইনচার্জ, ডেস্ক নম্বর, শাখা..." />
+      </div>
+      <button class="submit-btn" id="submitBtn" onclick="addEntry()">✓ তথ্য সংরক্ষণ করুন</button>
+    </div>
+    <div class="entries-label" id="entriesLabel">সংরক্ষিত তথ্য</div>
+    <div id="entriesList"><div class="loading-entries">⏳ তথ্য লোড হচ্ছে...</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAm6SF9lwu-9toI9JlcDhB1aXrUQOZC8rM",
+  authDomain: "nityo-samadhan.firebaseapp.com",
+  projectId: "nityo-samadhan",
+  storageBucket: "nityo-samadhan.firebasestorage.app",
+  messagingSenderId: "538057690775",
+  appId: "1:538057690775:web:c9e88fe757f7306b15a3d2"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const services = [
+  { id: 'current',    name: 'কারেন্ট মিস্ত্রী',  icon: '⚡' },
+  { id: 'rajmistri',  name: 'রাজমিস্ত্রী',         icon: '🧱' },
+  { id: 'water',      name: 'পানির মিস্ত্রী',       icon: '💧' },
+  { id: 'electricity',name: 'বিদ্যুৎ অফিস',        icon: '🔌' },
+  { id: 'tiles',      name: 'টাইলস মিস্ত্রী',       icon: '🏗️' },
+  { id: 'medical',    name: 'মেডিকেল',              icon: '🏥' },
+  { id: 'fire',       name: 'ফায়ার সার্ভিস',        icon: '🚒' },
+  { id: 'police',     name: 'পুলিশ',                icon: '🚔' },
+  { id: 'gas_service',name: 'গ্যাস সার্ভিস',        icon: '🔥' }
+];
+
+let currentService = null;
+let counts = {};
+let unsubscribe = null;
+
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = color || '#27ae60';
+  t.style.display = 'block';
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.style.display = 'none', 2600);
+}
+
+// Load counts for all services for landing grid
+async function loadCounts() {
+  for (const s of services) {
+    try {
+      const q = query(collection(db, 'entries'), where('serviceId', '==', s.id));
+      const snap = await getDocs(q);
+      counts[s.id] = snap.size;
+    } catch(e) { counts[s.id] = 0; }
+  }
+}
+
+function renderGrid() {
+  document.getElementById('serviceGrid').innerHTML = services.map(s => `
+    <div class="service-btn" onclick="openService('${s.id}')">
+      <div class="s-icon">${s.icon}</div>
+      <div class="s-name">${s.name}</div>
+      <div class="s-count">${counts[s.id] || 0} জন</div>
+    </div>
+  `).join('');
+}
+
+async function init() {
+  await loadCounts();
+  renderGrid();
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('landing').style.display = 'flex';
+}
+
+window.openService = function(id) {
+  currentService = services.find(s => s.id === id);
+  document.getElementById('pageIcon').textContent = currentService.icon;
+  document.getElementById('pageTitle').textContent = currentService.name;
+  document.getElementById('inputName').value = '';
+  document.getElementById('inputPhone').value = '';
+  document.getElementById('inputAddress').value = '';
+  document.getElementById('inputNote').value = '';
+  document.getElementById('landing').style.display = 'none';
+  document.getElementById('service-page').style.display = 'block';
+  window.scrollTo(0, 0);
+
+  // Realtime listener
+  if (unsubscribe) unsubscribe();
+  document.getElementById('entriesList').innerHTML = '<div class="loading-entries">⏳ তথ্য লোড হচ্ছে...</div>';
+
+  const q = query(
+    collection(db, 'entries'),
+    where('serviceId', '==', id)
+  );
+  unsubscribe = onSnapshot(q, (snap) => {
+    cachedEntries = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+    const entries = cachedEntries.filter(e => !e.hidden || isAdmin)
+      .sort((a, b) => {
+        const ta = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+        const tb = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+        return tb - ta;
+      });
+    document.getElementById('entriesLabel').textContent = `সংরক্ষিত তথ্য (${entries.length} জন)`;
+    renderEntries(entries);
+  }, (err) => {
+    console.error(err);
+    document.getElementById('entriesList').innerHTML = '<div class="empty-state">⚠️ তথ্য লোড করতে সমস্যা হয়েছে।</div>';
+  });
+}
+
+window.showLanding = function() {
+  if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+  document.getElementById('landing').style.display = 'flex';
+  document.getElementById('service-page').style.display = 'none';
+  window.scrollTo(0, 0);
+  loadCounts().then(renderGrid);
+}
+
+window.addEntry = async function() {
+  const name    = document.getElementById('inputName').value.trim();
+  const phone   = document.getElementById('inputPhone').value.trim();
+  const address = document.getElementById('inputAddress').value.trim();
+  const note    = document.getElementById('inputNote').value.trim();
+  if (!name || !phone) { showToast('⚠️ নাম ও ফোন নম্বর আবশ্যক!', '#e74c3c'); return; }
+
+  // ── Bad word blacklist ──
+  const badWords = [
+    'sex','sexy','porn','xxx','nude','naked','fuck','shit','dick','pussy','ass','bitch',
+    'rape','prostitute','escort','call girl','sex worker','sex partner','বেশ্যা','খানকি',
+    'মাগি','চোদা','চুদি','গান্ড','মাদার','ফাক','শালা','হারামি','কুত্তা','রেন্ডি','রান্ডি',
+    'নেংটা','নগ্ন','যৌন','সেক্স','পর্ন'
+  ];
+  const allText = (name + ' ' + note + ' ' + address).toLowerCase();
+  const foundBad = badWords.some(w => allText.includes(w.toLowerCase()));
+  if (foundBad) {
+    showToast('❌ অনুপযুক্ত শব্দ ব্যবহার করা যাবে না!', '#e74c3c');
+    return;
+  }
+
+  // ── Name validation: only Bangla, English, space, dot ──
+  if (!/^[\u0980-\u09FFa-zA-Z\s\.\-]+$/.test(name)) {
+    showToast('⚠️ নামে শুধু বাংলা বা ইংরেজি অক্ষর দিন!', '#e74c3c'); return;
+  }
+  const qualityErr = qualityCheck(name);
+  if (qualityErr) { showToast(qualityErr, '#e74c3c'); return; }
+
+  // ── Phone validation ──
+  const phoneClean = phone.replace(/\s|-/g, '');
+  if (!/^(\+?880|0)1[3-9]\d{8}$/.test(phoneClean)) {
+    showToast('⚠️ সঠিক বাংলাদেশি নম্বর দিন! যেমন: 017XXXXXXXX', '#e74c3c'); return;
+  }
+
+  // ── Duplicate phone check in same service ──
+  const dupCheck = cachedEntries.find(e => e.phone.replace(/\s|-/g,'') === phoneClean);
+  if (dupCheck) {
+    showToast('⚠️ এই নম্বর আগেই যোগ করা আছে!', '#e74c3c'); return;
+  }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ সংরক্ষণ হচ্ছে...';
+
+  try {
+    await addDoc(collection(db, 'entries'), {
+      serviceId: currentService.id,
+      serviceName: currentService.name,
+      name, phone, address, note,
+      createdAt: new Date()
+    });
+    document.getElementById('inputName').value = '';
+    document.getElementById('inputPhone').value = '';
+    document.getElementById('inputAddress').value = '';
+    document.getElementById('inputNote').value = '';
+    showToast('✓ সফলভাবে সংরক্ষিত হয়েছে!');
+  } catch(e) {
+    showToast('❌ সংরক্ষণ ব্যর্থ হয়েছে!', '#e74c3c');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '✓ তথ্য সংরক্ষণ করুন';
+}
+
+window.deleteEntry = async function(docId) {
+  if (!confirm('এই তথ্য মুছে ফেলবেন?')) return;
+  try {
+    await deleteDoc(doc(db, 'entries', docId));
+    showToast('🗑️ মুছে ফেলা হয়েছে', '#e74c3c');
+  } catch(e) {
+    showToast('❌ মুছতে সমস্যা হয়েছে!', '#e74c3c');
+  }
+}
+
+window.copyNumber = function(phone) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(phone)
+      .then(() => showToast('📋 নম্বর কপি হয়েছে: ' + phone, '#f5a623'))
+      .catch(() => fallbackCopy(phone));
+  } else { fallbackCopy(phone); }
+}
+
+function fallbackCopy(phone) {
+  const el = document.createElement('textarea');
+  el.value = phone; el.style.position = 'fixed'; el.style.opacity = '0';
+  document.body.appendChild(el); el.select();
+  try { document.execCommand('copy'); showToast('📋 নম্বর কপি হয়েছে: ' + phone, '#f5a623'); }
+  catch(e) { prompt('এই নম্বরটি কপি করুন:', phone); }
+  document.body.removeChild(el);
+}
+
+function renderEntries(entries) {
+  const list = document.getElementById('entriesList');
+  if (!entries.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div>এখনও কোনো তথ্য যোগ করা হয়নি।<br>উপরের ফর্ম দিয়ে নাম ও নম্বর যোগ করুন।</div>`;
+    return;
+  }
+  list.innerHTML = entries.map(e => `
+    <div class="entry-card">
+      <div class="entry-top">
+        <div>
+          <div class="entry-name">${e.name}</div>
+          <div class="entry-phone">📞 ${e.phone}</div>
+          ${e.address ? `<div class="entry-address">📍 ${e.address}</div>` : ''}
+          ${e.note ? `<div class="entry-note">📝 ${e.note}</div>` : ''}
+          <div class="entry-date-lbl">${e.createdAt?.toDate ? e.createdAt.toDate().toLocaleDateString('bn-BD') : ''}</div>
+        </div>
+        ${isAdmin ? `<button class="delete-btn" onclick="deleteEntry('${e.id}')">✕ মুছুন</button>` : ''}
+      </div>
+      <div class="action-row">
+        <a class="call-btn" href="tel:${e.phone}">📞 কল করুন</a>
+        <button class="copy-btn" onclick="copyNumber('${e.phone}')">📋 নম্বর কপি</button>
+      </div>
+      <button class="report-btn ${reportedByMe(e.id) ? 'reported' : ''}" 
+        onclick="reportEntry('${e.id}', this)" 
+        ${reportedByMe(e.id) ? 'disabled' : ''}>
+        ⚑ ${reportedByMe(e.id) ? 'রিপোর্ট করা হয়েছে' : 'ভুল তথ্য রিপোর্ট করুন'} 
+        ${e.reports ? `(${e.reports})` : ''}
+      </button>
+    </div>
+  `).join('');
+}
+
+// ── QUALITY CHECK ──
+function qualityCheck(name) {
+  // min 3 chars
+  if (name.length < 3) return '⚠️ নাম কমপক্ষে ৩ অক্ষর হতে হবে!';
+  // repeated chars: e.g. "aaaaaa" or "সসসস"
+  if (/^(.)\1{2,}$/.test(name)) return '⚠️ অর্থপূর্ণ নাম দিন!';
+  // keyboard smash: 4+ consecutive keyboard chars
+  if (/[asdfghjkl]{5,}|[qwertyuiop]{5,}|[zxcvbnm]{5,}/i.test(name)) return '⚠️ সঠিক নাম দিন!';
+  // only numbers
+  if (/^[0-9]+$/.test(name)) return '⚠️ নামে শুধু সংখ্যা দেওয়া যাবে না!';
+  return null;
+}
+
+// ── COMMUNITY REPORT ──
+function getMyReports() {
+  try { return JSON.parse(localStorage.getItem('my_reports') || '[]'); } catch(e) { return []; }
+}
+function saveMyReports(arr) {
+  try { localStorage.setItem('my_reports', JSON.stringify(arr)); } catch(e) {}
+}
+function reportedByMe(id) {
+  return getMyReports().includes(id);
+}
+
+window.reportEntry = async function(docId, btn) {
+  if (reportedByMe(docId)) return;
+  if (!confirm('এই তথ্যটি ভুল বা আপত্তিজনক মনে হচ্ছে?\nরিপোর্ট করবেন?')) return;
+
+  try {
+    const ref = doc(db, 'entries', docId);
+    const { getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const snap2 = await getDoc(ref);
+    const currentReports = snap2.exists() ? (snap2.data().reports || 0) : 0;
+    const newCount = currentReports + 1;
+
+    if (newCount >= 2) {
+      await updateDoc(ref, { reports: newCount, hidden: true });
+    } else {
+      await updateDoc(ref, { reports: newCount });
+    }
+
+    const myReports = getMyReports();
+    myReports.push(docId);
+    saveMyReports(myReports);
+
+    btn.textContent = '⚑ রিপোর্ট করা হয়েছে';
+    btn.classList.add('reported');
+    btn.disabled = true;
+
+    if (newCount >= 2) {
+      const card = btn.closest('.entry-card');
+      if (card) {
+        card.style.transition = 'opacity 0.4s';
+        card.style.opacity = '0';
+        setTimeout(() => card.remove(), 400);
+      }
+      showToast('🚫 এই তথ্য লুকিয়ে ফেলা হয়েছে!', '#e74c3c');
+    } else {
+      showToast('✓ রিপোর্ট করা হয়েছে। আরও ১ জন রিপোর্ট করলে লুকিয়ে যাবে।', '#f5a623');
+    }
+  } catch(err) {
+    console.error(err);
+    showToast('❌ রিপোর্ট করতে সমস্যা হয়েছে!', '#e74c3c');
+  }
+}
+
+// ── ADMIN ──
+const ADMIN_PASS = 'nityo@2026'; // আপনার password
+let isAdmin = false;
+
+window.toggleAdmin = function() {
+  if (isAdmin) {
+    // Logout
+    isAdmin = false;
+    document.getElementById('adminToggle').textContent = '🔒 Admin';
+    document.getElementById('adminToggle').classList.remove('active');
+    if (currentService) renderEntriesFromCache();
+    showToast('Admin logout হয়েছে', '#e74c3c');
+  } else {
+    document.getElementById('adminPassInput').value = '';
+    document.getElementById('adminModal').style.display = 'flex';
+    setTimeout(() => document.getElementById('adminPassInput').focus(), 100);
+  }
+}
+
+window.closeAdminModal = function() {
+  document.getElementById('adminModal').style.display = 'none';
+}
+
+window.checkAdminPass = function() {
+  const pass = document.getElementById('adminPassInput').value;
+  if (pass === ADMIN_PASS) {
+    isAdmin = true;
+    document.getElementById('adminModal').style.display = 'none';
+    document.getElementById('adminToggle').textContent = '🔓 Admin ✓';
+    document.getElementById('adminToggle').classList.add('active');
+    if (currentService) renderEntriesFromCache();
+    showToast('✓ Admin login সফল!');
+  } else {
+    showToast('❌ ভুল পাসওয়ার্ড!', '#e74c3c');
+    document.getElementById('adminPassInput').value = '';
+  }
+}
+
+let cachedEntries = [];
+function renderEntriesFromCache() { renderEntries(cachedEntries); }
+
+// ── WELCOME POPUP ──
+window.closePopup = function() {
+  const popup = document.getElementById('welcomePopup');
+  popup.style.opacity = '0';
+  popup.style.transition = 'opacity 0.3s';
+  setTimeout(() => popup.style.display = 'none', 300);
+}
+
+init();
+</script>
+</body>
+</html>
